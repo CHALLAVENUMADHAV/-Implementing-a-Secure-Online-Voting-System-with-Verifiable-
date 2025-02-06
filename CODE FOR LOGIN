@@ -1,0 +1,145 @@
+import streamlit as st
+import pandas as pd
+import hashlib
+# Function to hash passwords
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Function to authenticate user by checking name and hashed password
+def authenticate_user(name, password, filename='Voters.csv'):
+    try:
+        df = pd.read_csv(filename)
+    except FileNotFoundError:
+        st.error("No registered users found! Please register first.")
+        return False
+    
+    hashed_password = hash_password(password)
+    
+    if name in df['Name'].values:
+        stored_password = df.loc[df['Name'] == name, 'Password'].values[0]
+        if stored_password == hashed_password:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+# Function to save vote to CSV
+def save_vote(name, candidate, filename='Votes.csv'):
+    vote_data = {'Name': name, 'Candidate Voted For': candidate}
+    try:
+        df = pd.read_csv(filename)
+        df = pd.concat([df, pd.DataFrame([vote_data])], ignore_index=True)
+    except FileNotFoundError:
+        df = pd.DataFrame([vote_data])
+    
+    df.to_csv(filename, index=False)
+# Voting portal after successful login
+def voting_portal(name):
+    st.title(f"Welcome to the Online Voting Portal, {name}!")
+    
+    st.write("Please select your preferred candidate:")
+
+    # List of candidates, images, and their promises
+    candidates = ["Candidate A", "Candidate B", "Candidate C"]
+    candidate_images = ["https://imgs.search.brave.com/Crb9epbhJ5ticqmdVSXPgHDAma7ZzEmndq9EdoOvFVk/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA3Lzg2Lzk5LzE2/LzM2MF9GXzc4Njk5/MTY3Ml9QYUZVbHMy/SWRiWEZoZ2c0T0la/emd2bWR4Mmk0ZmNG/OC5qcGc", "https://imgs.search.brave.com/Crb9epbhJ5ticqmdVSXPgHDAma7ZzEmndq9EdoOvFVk/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA3Lzg2Lzk5LzE2/LzM2MF9GXzc4Njk5/MTY3Ml9QYUZVbHMy/SWRiWEZoZ2c0T0la/emd2bWR4Mmk0ZmNG/OC5qcGc", "https://imgs.search.brave.com/Crb9epbhJ5ticqmdVSXPgHDAma7ZzEmndq9EdoOvFVk/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly90My5m/dGNkbi5uZXQvanBn/LzA3Lzg2Lzk5LzE2/LzM2MF9GXzc4Njk5/MTY3Ml9QYUZVbHMy/SWRiWEZoZ2c0T0la/emd2bWR4Mmk0ZmNG/OC5qcGc"]  # Replace with actual image paths or URLs
+    party_images = ["https://imgs.search.brave.com/cTXcHpT9cGg1up3e3vKg0EB8z8e-KBHhBQ68M7ZafZU/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9yZXZpZXdpbmct/am9iLWNhbmRpZGF0/ZS1hcHBsaWNhdGlv/bnMtd2l0aC1tYWdu/aWZ5aW5nLWdsYXNz/XzY1MDUwMy0yOTIw/LmpwZz9zaXplPTYy/NiZleHQ9anBn", "https://imgs.search.brave.com/cTXcHpT9cGg1up3e3vKg0EB8z8e-KBHhBQ68M7ZafZU/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9yZXZpZXdpbmct/am9iLWNhbmRpZGF0/ZS1hcHBsaWNhdGlv/bnMtd2l0aC1tYWdu/aWZ5aW5nLWdsYXNz/XzY1MDUwMy0yOTIw/LmpwZz9zaXplPTYy/NiZleHQ9anBn", "https://imgs.search.brave.com/cTXcHpT9cGg1up3e3vKg0EB8z8e-KBHhBQ68M7ZafZU/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9yZXZpZXdpbmct/am9iLWNhbmRpZGF0/ZS1hcHBsaWNhdGlv/bnMtd2l0aC1tYWdu/aWZ5aW5nLWdsYXNz/XzY1MDUwMy0yOTIw/LmpwZz9zaXplPTYy/NiZleHQ9anBn"]  # Replace with actual party image paths or URLs
+    promises = [
+        "Candidate A promises to improve healthcare, education, and infrastructure.",
+        "Candidate B pledges to work on environmental issues and increase job opportunities.",
+        "Candidate C aims to reduce taxes and enhance national security."
+    ]
+
+    # Create columns to arrange candidates horizontally
+    columns = st.columns(len(candidates))
+    
+    for i, candidate in enumerate(candidates):
+        with columns[i]:
+            # Display candidate image in a card format with hover effect using custom CSS
+            st.markdown(
+                f"""
+                <style>
+                .card {{
+                    position: relative;
+                    width: 100%;
+                    height: 300px;
+                    margin-bottom: 10px;
+                    transition: transform 0.3s ease;
+                    text-align: center;
+                    border: 1px solid #ddd;
+                    border-radius: 10px;
+                    overflow: hidden;
+                }}
+                .card:hover {{
+                    transform: scale(1.05);
+                }}
+                .card img {{
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }}
+                .card .overlay {{
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(0, 0, 0, 0.7);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }}
+                .card:hover .overlay {{
+                    opacity: 1;
+                }}
+                </style>
+                <div class="card">
+                    <img src="{candidate_images[i]}" alt="{candidate}" />
+                    <div class="overlay">
+                        <img src="{party_images[i]}" alt="Party Image" style="width: 80%; height: auto;" />
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+
+            # Add a vote button below each candidate card
+            if st.button(f"Vote for {candidate}"):
+                save_vote(name, candidate)
+                st.success(f"Thank you, {name}! Your vote for {candidate} has been submitted.")
+                st.session_state['voted'] = True
+
+            # Add a Forum button with expandable text showing promises
+            with st.expander(f"Forum - {candidate}'s Motives and Promises"):
+                st.write(promises[i])
+
+# Main login and voting page function
+def login_page():
+    st.title('Login to Voter Portal')
+
+    if 'logged_in' not in st.session_state:
+        st.session_state['logged_in'] = False
+    if 'voted' not in st.session_state:
+        st.session_state['voted'] = False
+
+    if st.session_state['logged_in'] and not st.session_state['voted']:
+        voting_portal(st.session_state['name'])
+    elif not st.session_state['logged_in']:
+        name = st.text_input("Enter your Name")
+        password = st.text_input("Enter your Password", type='password')
+
+        if st.button("Login"):
+            if authenticate_user(name, password):
+                st.success(f"Welcome {name}, you are logged in!")
+                st.session_state['logged_in'] = True
+                st.session_state['name'] = name
+                voting_portal(name)
+            else:
+                st.error("Invalid name or password. Please try again.")
+    else:
+        st.success("You have already voted!")
+
+if __name__ == '__main__':
+    login_page()
