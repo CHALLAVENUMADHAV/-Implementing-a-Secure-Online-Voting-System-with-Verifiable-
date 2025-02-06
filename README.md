@@ -1,0 +1,2 @@
+# -Implementing-a-Secure-Online-Voting-System-with-Verifiable-
+Created a secure online voting system, which guaranteed the anonymity of the voter and also their votes’ verifiable integ‐ rity. Added advanced encryption and multi‐factor authentic‐ ation methods for the prevention of fraud and ensured scale‐ up to large‐scale elections. Also included high user accessibility through a user‐friendly interface.
