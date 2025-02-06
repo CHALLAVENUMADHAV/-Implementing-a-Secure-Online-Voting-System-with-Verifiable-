@@ -1,0 +1,66 @@
+import streamlit as st
+import pandas as pd
+import hashlib
+
+# Function to hash passwords
+def hash_password(password):
+    return hashlib.sha256(password.encode()).hexdigest()
+
+# Function to mask the phone number
+def mask_phone_number(phone_number):
+    # Mask all but the last 4 digits
+    return 'XXXXXX' + phone_number[-4:]
+
+# Function to save data to CSV
+def save_to_csv(data, filename='Voters.csv'):
+    new_data = pd.DataFrame([data])  # Convert the dictionary into a DataFrame row
+    
+    try:
+        df = pd.read_csv(filename)
+        df = pd.concat([df, new_data], ignore_index=True)  # Use pd.concat instead of .append()
+    except FileNotFoundError:
+        df = new_data  # If the CSV file doesn't exist, start with the new data
+    
+    df.to_csv(filename, index=False)
+
+# Main Streamlit app
+def voter_registration():
+    st.title('Voter Registration Portal')
+    
+    # Get inputs from the user
+    name = st.text_input("Enter your Name")
+    age = st.number_input("Enter your Age", min_value=18, max_value=120)
+    password = st.text_input("Create a Password", type='password')
+    voting_card_number = st.text_input("Enter your Voting Card Number")
+    phone_number = st.text_input("Enter your Phone Number")
+    
+    if st.button("Register"):
+        if age < 18:
+            st.error("You must be at least 18 years old to register.")
+        elif len(phone_number) != 10 or not phone_number.isdigit():
+            st.error("Please enter a valid 10-digit phone number.")
+        elif not all([name, password, voting_card_number, phone_number]):
+            st.error("Please fill in all fields.")
+        else:
+            # Hash the password
+            hashed_password = hash_password(password)
+            
+            # Mask the phone number
+            masked_phone_number = mask_phone_number(phone_number)
+            
+            # Prepare the data dictionary
+            voter_data = {
+                'Name': name,
+                'Age': age,
+                'Password': hashed_password,
+                'Voting Card Number': voting_card_number,
+                'Phone Number': masked_phone_number
+            }
+            
+            # Save the data to CSV
+            save_to_csv(voter_data)
+            
+            st.success("Voter registration successful!")
+
+if __name__ == '__main__':
+    voter_registration()
